@@ -118,8 +118,13 @@ fi
 
 # Verificar se o pip está instalado
 if ! command -v pip3 &>/dev/null; then
-  echo "Erro: pip3 não encontrado. Instale o pip para Python3 para continuar."
-  exit 1
+  echo "pip3 não encontrado. Instalando..."
+  sudo apt update
+  sudo apt install python3-pip -y
+  if ! command -v pip3 &>/dev/null; then
+    echo "Erro: Falha ao instalar o pip3. Instale manualmente para continuar."
+    exit 1
+  fi
 fi
 
 # Verificar se o Django está instalado, se não, instalar automaticamente

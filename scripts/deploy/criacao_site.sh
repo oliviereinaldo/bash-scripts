@@ -129,13 +129,14 @@ fi
 
 # Verificar se o Django está instalado, se não, instalar automaticamente
 if ! python3 -c "import django" &>/dev/null; then
-  echo "Django não está instalado. Instalando Django..."
-  pip3 install --user django
+  echo "Django não está instalado. Instalando Django via apt..."
+  sudo apt update
+  sudo apt install -y python3-django
   if [ $? -ne 0 ]; then
-    echo "Erro na instalação do Django. Verifique sua conexão e permissões."
+    echo "Erro na instalação do Django via apt. Verifique sua conexão e permissões."
     exit 1
   fi
-  echo "Django instalado com sucesso."
+  echo "Django instalado com sucesso via apt."
 fi
 
 # Gerar automaticamente a chave secreta do Django, se não fornecida

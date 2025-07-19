@@ -428,6 +428,63 @@ else
 fi
 
 # ================================
+# GERAÇÃO DO CERTIFICADO SSL COM CERTBOT
+# ================================
+sudo certbot --nginx -d "$DOMINIO" -d "$DOMINIO_WWW" --non-interactive --agree-tos -m "$NOME_SITE@$DOMINIO" || echo "Certbot falhou (verifique domínio e DNS)."
+ATIVAR
+CERT_PATH="/etc/letsencrypt/live/$DOMINIO/fullchain.pem"
+
+if [ ! -f "$CERT_PATH" ]; then
+    echo "Emitindo certificado SSL com Certbot para $DOMINIO e $DOMINIO_WWW..."
+    sudo certbot --nginx -d "$DOMINIO" -d "$DOMINIO_WWW" \
+        --non-interactive --agree-tos -m seu-email@exemplo.com || \
+        echo "Certbot falhou (verifique domínio e DNS ou aguarde o limite da Let's Encrypt expirar)."
+else
+    echo "Certificado SSL já existe. Pulando emissão com Certbot."
+fi
+
+# ================================
+# CONFIGURAÇÃO DEFINITIVA DO NGINX COM SSL
+# ================================
+sudo tee "$NGINX_CONF" > /dev/null <<EOF
+server {
+    listen 80;
+    server_name $DOMINIO $DOMINIO_WWW;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $DOMINIO $DOMINIO_WWW;
+
+    client_max_body_size 3M;
+
+    location /static/ {
+        alias $SITE_DIR/staticfiles/;
+    }
+
+    location /media/ {
+        alias $SITE_DIR/media/;
+    }
+
+    location / {
+        proxy_pass http://unix:$SITE_DIR/gunicorn.sock;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/$DOMINIO/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMINIO/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+EOF
+
+sudo nginx -t && sudo systemctl reload nginx
+
+# ================================
 # GUNICORN SERVICE
 # ================================
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"

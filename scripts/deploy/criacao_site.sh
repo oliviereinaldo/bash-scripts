@@ -244,6 +244,15 @@ fi
 cd "$SITE_DIR" || exit 1
 
 # ================================
+# GARANTE QUE O PYTHON VENV ESTÁ DISPONÍVEL
+# ================================
+if ! python3 -m venv --help >/dev/null 2>&1; then
+  echo "Módulo venv não disponível. Instalando pacote python3-venv..."
+  sudo apt update
+  sudo apt install -y python3-venv
+fi
+
+# ================================
 # CRIA E ATIVA AMBIENTE VIRTUAL PYTHON
 # ================================
 if [ ! -d "venv_${NOME_SITE}" ]; then

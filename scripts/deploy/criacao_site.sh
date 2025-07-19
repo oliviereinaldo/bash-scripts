@@ -244,12 +244,16 @@ fi
 cd "$SITE_DIR" || exit 1
 
 # ================================
-# GARANTE QUE O PYTHON VENV ESTÁ DISPONÍVEL
+# GARANTE QUE O PYTHON VENV ESTÁ DISPONÍVEL PARA A VERSÃO ATUAL DO PYTHON3
 # ================================
+
+# Detecta a versão principal do python3 (ex: 3.12)
+PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+
 if ! python3 -m venv --help >/dev/null 2>&1; then
-  echo "Módulo venv não disponível. Instalando pacote python3-venv..."
+  echo "Módulo venv não disponível para Python $PYTHON_VERSION. Instalando pacote python${PYTHON_VERSION}-venv..."
   sudo apt update
-  sudo apt install -y python3-venv
+  sudo apt install -y python${PYTHON_VERSION}-venv
 fi
 
 # ================================

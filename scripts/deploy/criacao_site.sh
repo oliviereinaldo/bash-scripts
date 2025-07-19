@@ -401,7 +401,7 @@ sudo chown www-data:www-data "$LOG_PATH"/*.log
 sudo chmod 640 "$LOG_PATH"/*.log
 
 # ================================
-# CONFIGURAÇÃO DO NGINX (BÁSICA)
+# CONFIGURAÇÃO DO NGINX (BÁSICA) - sem SSL
 # ================================
 NGINX_CONF="/etc/nginx/sites-available/${DOMINIO}"
 if [ ! -f "$NGINX_CONF" ]; then
@@ -438,25 +438,16 @@ fi
 # ================================
 # GERAÇÃO DO CERTIFICADO SSL COM CERTBOT
 # ================================
+echo "Tentando emitir certificado SSL com Certbot para $DOMINIO e $DOMINIO_WWW..."
 sudo certbot --nginx -d "$DOMINIO" -d "$DOMINIO_WWW" \
     --non-interactive --agree-tos -m "$NOME_SITE@$DOMINIO" || \
     echo "Certbot falhou (verifique domínio e DNS)."
 
 CERT_PATH="/etc/letsencrypt/live/$DOMINIO/fullchain.pem"
+if [ -f "$CERT_PATH" ]; then
+    echo "Certificado SSL emitido com sucesso. Configurando NGINX com HTTPS..."
 
-if [ ! -f "$CERT_PATH" ]; then
-    echo "Emitindo certificado SSL com Certbot para $DOMINIO e $DOMINIO_WWW..."
-    sudo certbot --nginx -d "$DOMINIO" -d "$DOMINIO_WWW" \
-        --non-interactive --agree-tos -m "$NOME_SITE@$DOMINIO" || \
-        echo "Certbot falhou (verifique domínio e DNS ou aguarde o limite da Let's Encrypt expirar)."
-else
-    echo "Certificado SSL já existe. Pulando emissão com Certbot."
-fi
-
-# ================================
-# CONFIGURAÇÃO DEFINITIVA DO NGINX COM SSL
-# ================================
-sudo tee "$NGINX_CONF" > /dev/null <<EOF
+    sudo tee "$NGINX_CONF" > /dev/null <<EOF
 server {
     listen 80;
     server_name $DOMINIO $DOMINIO_WWW;
@@ -492,8 +483,10 @@ server {
 }
 EOF
 
-sudo nginx -t && sudo systemctl reload nginx
-
+    sudo nginx -t && sudo systemctl reload nginx
+else
+    echo "Certificado SSL não encontrado. Pulando configuração HTTPS."
+fi
 # ================================
 # GUNICORN SERVICE
 # ================================

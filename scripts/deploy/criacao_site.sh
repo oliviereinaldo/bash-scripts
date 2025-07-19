@@ -246,14 +246,22 @@ cd "$SITE_DIR" || exit 1
 # ================================
 # GARANTE QUE O PYTHON VENV ESTÁ DISPONÍVEL PARA A VERSÃO ATUAL DO PYTHON3
 # ================================
-
-# Detecta a versão principal do python3 (ex: 3.12)
+# Detectar versão
 PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 
+# Instalar venv e distutils
+sudo apt update
+sudo apt install -y python${PYTHON_VERSION}-venv python${PYTHON_VERSION}-distutils python${PYTHON_VERSION}-dev
+
+# Verificar venv
 if ! python3 -m venv --help >/dev/null 2>&1; then
-  echo "Módulo venv não disponível para Python $PYTHON_VERSION. Instalando pacote python${PYTHON_VERSION}-venv..."
-  sudo apt update
-  sudo apt install -y python${PYTHON_VERSION}-venv
+  echo "Erro: venv ainda não disponível após instalação."
+  exit 1
+fi
+
+# Criar ambiente virtual
+if [ ! -d "venv_${NOME_SITE}" ]; then
+  python3 -m venv "venv_${NOME_SITE}"
 fi
 
 # ================================

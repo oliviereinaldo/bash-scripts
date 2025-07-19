@@ -259,11 +259,6 @@ if ! python3 -m venv --help >/dev/null 2>&1; then
   exit 1
 fi
 
-# Criar ambiente virtual
-if [ ! -d "venv_${NOME_SITE}" ]; then
-  python3 -m venv "venv_${NOME_SITE}"
-fi
-
 # ================================
 # CRIA E ATIVA AMBIENTE VIRTUAL PYTHON
 # ================================

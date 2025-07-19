@@ -428,16 +428,26 @@ else
 fi
 
 # ================================
+# INSTALAÇÃO DO CERTBOT (caso necessário)
+# ================================
+if ! command -v certbot >/dev/null 2>&1; then
+    echo "Certbot não encontrado. Instalando Certbot com suporte NGINX..."
+    sudo apt update && sudo apt install -y certbot python3-certbot-nginx
+fi
+
+# ================================
 # GERAÇÃO DO CERTIFICADO SSL COM CERTBOT
 # ================================
-sudo certbot --nginx -d "$DOMINIO" -d "$DOMINIO_WWW" --non-interactive --agree-tos -m "$NOME_SITE@$DOMINIO" || echo "Certbot falhou (verifique domínio e DNS)."
-ATIVAR
+sudo certbot --nginx -d "$DOMINIO" -d "$DOMINIO_WWW" \
+    --non-interactive --agree-tos -m "$NOME_SITE@$DOMINIO" || \
+    echo "Certbot falhou (verifique domínio e DNS)."
+
 CERT_PATH="/etc/letsencrypt/live/$DOMINIO/fullchain.pem"
 
 if [ ! -f "$CERT_PATH" ]; then
     echo "Emitindo certificado SSL com Certbot para $DOMINIO e $DOMINIO_WWW..."
     sudo certbot --nginx -d "$DOMINIO" -d "$DOMINIO_WWW" \
-        --non-interactive --agree-tos -m seu-email@exemplo.com || \
+        --non-interactive --agree-tos -m "$NOME_SITE@$DOMINIO" || \
         echo "Certbot falhou (verifique domínio e DNS ou aguarde o limite da Let's Encrypt expirar)."
 else
     echo "Certificado SSL já existe. Pulando emissão com Certbot."

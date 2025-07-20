@@ -274,6 +274,13 @@ PYTHON="$SITE_DIR/venv_${NOME_SITE}/bin/python"
 DJANGO_ADMIN="$SITE_DIR/venv_${NOME_SITE}/bin/django-admin"
 
 # ================================
+# DEPENDÊNCIAS PARA COMPILAÇÃO DO mysqlclient
+# ================================
+echo "Instalando dependências para mysqlclient..."
+sudo apt update
+sudo apt install -y pkg-config default-libmysqlclient-dev build-essential
+
+# ================================
 # INSTALA DEPENDÊNCIAS PYTHON NO AMBIENTE
 # ================================
 echo "Instalando Django, mysqlclient e gunicorn..."
